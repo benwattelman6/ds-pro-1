@@ -8,7 +8,17 @@
  */
 
 public class AVLTree {
-
+	
+	private AVLNode root;
+	private int min;
+	private int max;
+	
+	public AVLTree () {
+		//initialize external leaf with isExternal = true
+		AVLNode externalLeaf = new AVLNode("",-1);
+		externalLeaf.setIsExternal(true);
+	}
+	
   /**
    * public boolean empty()
    *
@@ -41,6 +51,8 @@ public class AVLTree {
    */
    public int insert(int k, String i) {
 	  return 42;	// to be replaced by student code
+	  //**left & right initialized to external leaf
+
    }
 
   /**
@@ -181,7 +193,34 @@ public class AVLTree {
    * This class can and must be modified.
    * (It must implement IAVLNode)
    */
+	
+
+	
   public class AVLNode implements IAVLNode{
+	  
+	  private String info;
+	  private int key;
+	  private int rank;
+	  private int height;
+	  private int size;
+
+	  private AVLNode left;
+	  private AVLNode right;
+	  private AVLNode parent;
+	  
+	  private boolean isExternal;
+	  
+	  
+	  public AVLNode (String info, int key) {
+		  this.info = info;
+		  this.key = key;
+		  this.isExternal = false;
+	  }
+	  	
+	  	public void setIsExternal (boolean b) {
+	  		this.isExternal = b;
+	  	}
+	  
 		public int getKey()
 		{
 			return 42; // to be replaced by student code
