@@ -6,8 +6,9 @@
  */
 
 public class AVLTree {
-
-    private AVLNode root;
+	
+	
+    private IAVLNode root;
     private int min;
     private int max;
 
@@ -17,6 +18,7 @@ public class AVLTree {
         //initialize external leaf with isExternal = true
         externalLeaf = new AVLNode("", -1);
         externalLeaf.setIsExternal(true);
+        this.root = null;
     }
 
     /**
@@ -215,9 +217,71 @@ public class AVLTree {
      * <p>
      * Time complexity: O(1)
      */
-    public void setRoot(AVLNode root) {
-        this.root = root;
+    public void setRoot(IAVLNode newRoot) {
+        this.root = newRoot;
     }
+    
+    /*
+     * Perform single rotation as part of a rebalancing.
+     * Receives current root of subtree (before rotation) and type of rotation ('R' or 'L')
+     * Time complexity: O(1) 
+     */
+    public void rotate (IAVLNode x, char type) {
+    	if (type == 'R') { //right rotation
+    		IAVLNode oldRoot = x;
+    		IAVLNode oldRootParent = x.getParent();
+    		IAVLNode newRoot = x.getLeft();
+    		IAVLNode newRootRight = x.getLeft().getRight();
+    		//No need to save newRootLeft because it stays the same
+    		
+    		//handle old root's parent
+    		if (oldRootParent == null) { //x is current tree root
+    			this.setRoot(newRoot);
+    		}
+    		else if (oldRoot.getKey() < oldRootParent.getKey()) //x is left child of parent
+    			oldRootParent.setLeft(newRoot);
+    		else //x is right child of parent
+    			oldRootParent.setRight(newRoot);
+    		//handle new root
+    		newRoot.setParent(oldRootParent);
+    		newRoot.setRight(oldRoot);
+    		//handle old root
+    		oldRoot.setParent(newRoot);
+    		oldRoot.setLeft(newRootRight);
+    		//handle new root's right child
+    		newRootRight.setParent(oldRoot);
+    	}
+    	
+    	else { //type == 'L', left rotation
+    		IAVLNode oldRoot = x;
+    		IAVLNode oldRootParent = x.getParent();
+    		IAVLNode newRoot = x.getRight();
+    		IAVLNode newRootLeft = x.getRight().getLeft();
+    		//No need to save newRootRight because it stays the same
+    		
+    		//handle old root's parent
+    		if (oldRootParent == null) { //x is current tree root
+    			this.setRoot(newRoot);
+    		}
+    		else if (oldRoot.getKey() < oldRootParent.getKey()) //x is left child of parent
+    			oldRootParent.setLeft(newRoot);
+    		else //x is right child of parent
+    			oldRootParent.setRight(newRoot);
+    		//handle new root
+    		newRoot.setParent(oldRootParent);
+    		newRoot.setLeft(oldRoot);
+    		//handle old root
+    		oldRoot.setParent(newRoot);
+    		oldRoot.setRight(newRootLeft);
+    		//handle new root's left child
+    		newRootLeft.setParent(oldRoot);
+    	}
+    }
+    
+    
+    
+    
+    
 
     /**
      * public interface IAVLNode
@@ -321,12 +385,23 @@ public class AVLTree {
         public IAVLNode getRight() {
             return right; // to be replaced by student code
         }
-
+        
+        /**
+         * Updates the parent of this node
+         * <p>
+         * Time complexity: O(1)
+         */
         public void setParent(IAVLNode node) {
+        	this.parent = (AVLNode) node;
         }
 
+        /**
+         * Returns the parent of this node
+         * <p>
+         * Time complexity: O(1)
+         */
         public IAVLNode getParent() {
-            return null; // to be replaced by student code
+            return this.parent;
         }
 
         // Returns True if this is a non-virtual AVL node
