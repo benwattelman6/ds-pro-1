@@ -226,12 +226,20 @@ public class AVLTree {
      * Receives current root of subtree (before rotation) and type of rotation ('R' or 'L')
      * Time complexity: O(1) 
      */
+    //TODO: update ranks when rotating
+    
     public void rotate (IAVLNode x, char type) {
+		IAVLNode oldRoot;
+		IAVLNode oldRootParent;
+		IAVLNode newRoot;
+		IAVLNode newRootRight;
+		IAVLNode newRootLeft;
+
     	if (type == 'R') { //right rotation
-    		IAVLNode oldRoot = x;
-    		IAVLNode oldRootParent = x.getParent();
-    		IAVLNode newRoot = x.getLeft();
-    		IAVLNode newRootRight = x.getLeft().getRight();
+    		oldRoot = (AVLNode) x;
+    		oldRootParent = (AVLNode) x.getParent();
+    		newRoot = (AVLNode) x.getLeft();
+    		newRootRight = (AVLNode) x.getLeft().getRight();
     		//No need to save newRootLeft because it stays the same
     		
     		//handle old root's parent
@@ -244,19 +252,22 @@ public class AVLTree {
     			oldRootParent.setRight(newRoot);
     		//handle new root
     		newRoot.setParent(oldRootParent);
-    		newRoot.setRight(oldRoot);
+    		newRoot.setRight((IAVLNode)oldRoot);
     		//handle old root
     		oldRoot.setParent(newRoot);
     		oldRoot.setLeft(newRootRight);
+    		
     		//handle new root's right child
     		newRootRight.setParent(oldRoot);
+ 
+
     	}
     	
     	else { //type == 'L', left rotation
-    		IAVLNode oldRoot = x;
-    		IAVLNode oldRootParent = x.getParent();
-    		IAVLNode newRoot = x.getRight();
-    		IAVLNode newRootLeft = x.getRight().getLeft();
+    		oldRoot = x;
+    		oldRootParent = x.getParent();
+    		newRoot = x.getRight();
+    		newRootLeft = x.getRight().getLeft();
     		//No need to save newRootRight because it stays the same
     		
     		//handle old root's parent
@@ -275,13 +286,63 @@ public class AVLTree {
     		oldRoot.setRight(newRootLeft);
     		//handle new root's left child
     		newRootLeft.setParent(oldRoot);
+    		
+
     	}
+    	
+		//update ranks
+		oldRoot.setHeight(1+Math.max(oldRoot.getRight().getHeight(), oldRoot.getLeft().getHeight()));
+		newRoot.setHeight(1+Math.max(newRoot.getRight().getHeight(), newRoot.getLeft().getHeight()));
     }
     
     
+    public int rebalanceInsert (IAVLNode node) {
+    	int count = 0;
+    	IAVLNode parent = node.getParent();
+    	while ((parent != null) && (parent.getHeight() - node.getHeight() == 0)) {
+    		int dif = getBalance(node.getParent());
+    		if (dif == -1 || dif == 1) {
+    			parent.setHeight(parent.getHeight()+1);
+    		}
+    		else if (dif == -2) {
+    			int difX = getBalance(node);
+    			if (difX == -1) {  //case 2, slide 22
+    				this.rotate(parent, 'R');
+    			}
+    			
+    			else if (difX == 1){ //case 3, slide 22
+    				this.rotate(node, 'L');
+    				count++;
+    				this.rotate(parent, 'R');
+    			}
+    		}
+    		else if (dif == 2) {
+    			int difX = getBalance(node);
+    			if (difX == -1) {  //case 2, slide 22
+    				this.rotate(parent, 'L');
+    			}
+    			
+    			else if (difX == 1){ //case 3, slide 22
+    				this.rotate(node, 'R');
+    				count++;
+    				this.rotate(parent, 'L');
+    			}
+    		}
+    		
+			node = node.getParent();
+    		count++;
+    	}
+    	
+    	
+    	return count; //change
+    }
     
-    
-    
+    public int getBalance (IAVLNode node) {
+    	if (node == null || node == this.externalLeaf)
+    		return 0;
+    	return (node.getLeft().getHeight() - node.getRight().getHeight());
+    	
+    }
 
     /**
      * public interface IAVLNode
@@ -324,7 +385,6 @@ public class AVLTree {
 
         private String info;
         private int key;
-        private int rank;
         private int height;
         private int size;
 
@@ -339,8 +399,11 @@ public class AVLTree {
             this.info = info;
             this.key = key;
             this.isExternal = false;
+            this.height = 0;
+            
         }
-
+        
+        
         public void setIsExternal(boolean b) {
             this.isExternal = b;
         }
@@ -410,10 +473,11 @@ public class AVLTree {
         }
 
         public void setHeight(int height) {
+        	this.height = height;
         }
 
         public int getHeight() {
-            return 42; // to be replaced by student code
+            return this.height;
         }
     }
 
