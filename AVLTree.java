@@ -83,6 +83,7 @@ public class AVLTree {
      * returns -1 if an item with key k already exists in the tree.
      */
     public int insert(int k, String i) {
+        int counter = 0;
         IAVLNode newNode = createNewNode(k, i);
         IAVLNode a = getRoot();
         IAVLNode b = null;
@@ -121,16 +122,20 @@ public class AVLTree {
             }
             newNode.setParent(b);
         }
-        updateHeight(b);
+        if (updateHeight(b)) counter++;
 
-        int counter = 0;
         IAVLNode p = newNode;
         while (p != null) {
-            counter += rebalance(p);
-            updateHeight(p);
+            int actions = rebalance(p);
+            if (actions > 0) {
+                System.out.println("[insert] Rotation occured. Tree is balanced.");
+                counter += actions;
+                // TODO: can break here?
+            }
+            if (updateHeight(p)) counter++;
             p = p.getParent();
         }
-        updateHeight(getRoot());
+        if (updateHeight(getRoot())) counter++; // TODO: not sure necessary after change in loop
         this.nodes++; // increment the number of nodes
         return counter;    // to be replaced by student code
     }
@@ -151,10 +156,11 @@ public class AVLTree {
             if (getBalance(n.getLeft()) < 0) {
                 // This is LR case
                 System.out.println("[rebalance] the right subtree causing it, should be LR");
-                counter++;
+                counter = 5; // add the rotation to counter
                 rotate(n.getLeft(), 'L');
+            } else {
+                counter = 2; // add the rotation to counter
             }
-            counter++;
             rotate(n, 'R');
         } else if (balance < -1) {
             System.out.println("[rebalance] right heavy");
@@ -162,13 +168,14 @@ public class AVLTree {
             if (getBalance(n.getRight()) > 0) {
                 // This is RL case
                 System.out.println("[rebalance] the right left causing it, should be RL");
-                counter++;
+                counter = 5;
                 rotate(n.getRight(), 'R');
+            } else {
+                counter = 2; // add the rotation to counter
             }
-            counter++;
             rotate(n, 'L');
         }
-        return counter;
+        return counter; // add the rotation to counter
     }
 
     /**
@@ -316,8 +323,17 @@ public class AVLTree {
         this.root = newRoot;
     }
 
-    private void updateHeight(IAVLNode n) {
+    /**
+     * Updating the node height if necessary.
+     * Return true if height changed, false otherwise.
+     *
+     * @param n
+     * @return
+     */
+    private boolean updateHeight(IAVLNode n) {
+        int formerHeight = n.getHeight();
         n.setHeight(Math.max(n.getLeft().getHeight(), n.getRight().getHeight()) + 1);
+        return formerHeight != n.getHeight();
     }
 
     /**

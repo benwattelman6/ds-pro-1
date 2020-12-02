@@ -18,10 +18,11 @@ class AVLTreeTest {
 
         AVLTree t2 = new AVLTree();
         assertEquals(0, t2.insert(43, "43"));
-        assertEquals(0, t2.insert(18, "18"));
-        assertEquals(2, t2.insert(22, "22")); // should make two rotation here
+        assertEquals(1, t2.insert(18, "18"));
+        assertEquals(6, t2.insert(22, "22")); // should make two rotation here
         assertEquals(3, t2.size());
         BTreePrinter.printNode(t2.getRoot());
+
     }
 
     @org.junit.jupiter.api.Test
