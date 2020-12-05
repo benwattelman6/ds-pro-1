@@ -128,7 +128,7 @@ public class AVLTree {
         while (p != null) {
             int actions = rebalance(p);
             if (actions > 0) {
-                System.out.println("[insert] Rotation occured. Tree is balanced.");
+                System.out.println("[insert] Rotation occurred. Tree is balanced.");
                 counter += actions;
                 // TODO: can break here?
             }
@@ -291,6 +291,20 @@ public class AVLTree {
     }
 
     /**
+     * This method returns the rank of the tree.
+     * empty tree rank is
+     */
+    public int getRank() {
+        if (empty()) return -1;
+        return getRoot().getHeight();
+    }
+
+    public String toString() {
+        IAVLNode root = this.getRoot();
+        return "Tree root: " + (root != null ? root.getValue() : "EMPTY");
+    }
+
+    /**
      * public string split(int x)
      * <p>
      * splits the tree into 2 trees according to the key x.
@@ -311,7 +325,72 @@ public class AVLTree {
      * postcondition: none
      */
     public int join(IAVLNode x, AVLTree t) {
-        return 0;
+        if (t.empty()) {
+            System.out.println("`t` is an empty tree, so just need to insert `x`");
+        }
+        int rankDiff = this.getRank() - t.getRank();
+
+        AVLTree T1, T2; // rank(T1) <= rank(T2)
+        if (rankDiff >= 0) {
+            // this is the bigger tree
+            T1 = t;
+            T2 = this;
+        } else {
+            // t is the bigger tree
+            T1 = this;
+            T2 = t;
+        }
+        int biggerKeys = T1.getRoot().getKey() - T2.getRoot().getKey(); // can't be 0!
+
+        IAVLNode a, b, c, left, right;
+        a = T1.getRoot();
+        b = T2.getRoot();
+        while (b.getHeight() > a.getHeight()) {
+            if (biggerKeys > 0) {
+                // T1 (the smaller tree), has bigger keys, thus it should hang from the right
+                // so we are traveling the right spine
+                b = b.getRight();
+            } else {
+                // T2 has bigger keys, thus T1 should hang from the left
+                // so we are traveling the left spine
+                b = b.getLeft();
+            }
+        }
+        // we got b!
+        c = b.getParent();
+
+        if (biggerKeys > 0) {
+            right = a;
+            left = b;
+        } else {
+            right = b;
+            left = a;
+        }
+        x.setLeft(left);
+        x.setRight(right);
+        x.setHeight(T1.getRank() + 1);
+        left.setParent(x);
+        right.setParent(x);
+        x.setParent(c);
+        if (c == null) {
+            // x is new root, and tree is balanced
+            this.setRoot(x);
+            return 1;
+        } else if (biggerKeys > 0) c.setRight(x);
+        else c.setLeft(x);
+        IAVLNode p = x;
+        while (p != null) {
+            if (p.getParent() == null) {
+                this.setRoot(p);
+            }
+            rebalance(p);
+            updateHeight(p);
+
+            p = p.getParent();
+
+        }
+        this.nodes += 1 + t.size(); // update the amount of nodes (x + all the nodes of t);
+        return Math.abs(rankDiff) + 1;
     }
 
     /**
@@ -480,6 +559,9 @@ public class AVLTree {
 
         }
 
+        public String toString() {
+            return this.key + ": " + this.info;
+        }
 
         public void setIsExternal(boolean b) {
             this.isExternal = b;

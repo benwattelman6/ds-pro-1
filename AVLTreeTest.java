@@ -100,5 +100,19 @@ class AVLTreeTest {
         assertArrayEquals(new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19}, res);
     }
 
+    @org.junit.jupiter.api.Test
+    void join() {
+        AVLTree t1 = new AVLTree();
+        AVLTree t2 = new AVLTree();
+        AVLTree t3 = new AVLTree();
+        for (int i = 1; i < 5; i++) {
+            t1.insert(i, "Key is " + i);
+        }
+        for (int i = 9; i < 30; i++) {
+            t2.insert(i, "Key is " + i);
+        }
+        t3.insert(7, "7");
+        t2.join(t3.getRoot(), t1);
+    }
 
 }
