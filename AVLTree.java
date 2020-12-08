@@ -45,14 +45,14 @@ public class AVLTree {
     public String search(int k) {
         IAVLNode n = search(getRoot(), k);
         if (n == null) return null;
-        if (n == externalLeaf) return null;
+        if (!n.isRealNode()) return null;
         return n.getValue();  // to be replaced by student code
     }
 
     private IAVLNode search(IAVLNode root, int k) {
-        if (root == null || root == externalLeaf || root.getKey() == k) {
-            return root;
-        }
+        if (root == null) return null;
+        if (!root.isRealNode()) return null;
+        if (root.getKey() == k) return root;
         if (root.getKey() < k) return search(root.getRight(), k);
         return search(root.getLeft(), k);
     }
@@ -87,7 +87,7 @@ public class AVLTree {
         IAVLNode newNode = createNewNode(k, i);
         IAVLNode a = getRoot();
         IAVLNode b = null;
-        while (a != this.externalLeaf && a != null) {
+        while (a != null && a.isRealNode()) {
             b = a;
             if (b.getKey() == k) return -1;
             if (k < a.getKey()) a = a.getLeft();
@@ -202,7 +202,7 @@ public class AVLTree {
         if (empty()) return null;
         IAVLNode n = getRoot();
         IAVLNode a = null;
-        while (n != null && n != externalLeaf) {
+        while (n != null && n.isRealNode()) {
             a = n;
             n = n.getLeft();
         }
@@ -220,7 +220,7 @@ public class AVLTree {
         if (empty()) return null;
         IAVLNode n = getRoot();
         IAVLNode a = null;
-        while (n != null && n != externalLeaf) {
+        while (n != null && n.isRealNode()) {
             a = n;
             n = n.getRight();
         }
@@ -422,7 +422,7 @@ public class AVLTree {
      */
     public IAVLNode rotate(IAVLNode root, char type) {
         // ensure nothing bad happen with invalid input
-        if (root == null || root == this.externalLeaf) {
+        if (root == null || !root.isRealNode()) {
             return null;
         }
         if (type == 'R') return rotateRight(root);
@@ -479,7 +479,7 @@ public class AVLTree {
 
 
     int getBalance(IAVLNode node) {
-        if (node == null || node == this.externalLeaf) return 0;
+        if (node == null || !node.isRealNode()) return 0;
         return (node.getLeft().getHeight() - node.getRight().getHeight());
 
     }
