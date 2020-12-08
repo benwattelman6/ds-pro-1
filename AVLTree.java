@@ -251,16 +251,16 @@ public class AVLTree {
 		System.out.printf("[delete] `%d` in tree, initiating deletion\n", k);
 		IAVLNode p = toDelete.getParent(); //rank problem starts from p, could be null if k is root
     	
-    	if (toDelete.getLeft() == externalLeaf && toDelete.getRight() == externalLeaf) { //k is a leaf
+    	if (toDelete.getLeft().isRealNode() && toDelete.getRight().isRealNode()) { //k is a leaf
     		System.out.printf("[delete] `%d` is a leaf, deleting it from tree \n", k);
     		deleteLeaf(toDelete);
     	}
 
-    	else if (toDelete.getRight() == externalLeaf) { //k only has left child
+    	else if (toDelete.getRight().isRealNode()) { //k only has left child
     		System.out.printf("[delete] `%d` is unary left, deleting it from tree \n", k);
     		deleteUnary(toDelete,'L');
     	}
-    	else if (toDelete.getLeft() == externalLeaf) { //k only has right child
+    	else if (toDelete.getLeft().isRealNode()) { //k only has right child
     		System.out.printf("[delete] `%d` is unary right, deleting it from tree \n", k);
     		deleteUnary(toDelete, 'R');
     	}
@@ -271,7 +271,7 @@ public class AVLTree {
     		toDelete.setInfo(suc.getValue());
     		toDelete.setKey(suc.getKey());
     		p = suc.getParent();
-        	if (suc.getLeft() == externalLeaf && suc.getRight() == externalLeaf)  //suc is a leaf
+        	if (suc.getLeft().isRealNode() && suc.getRight().isRealNode())  //suc is a leaf
         		deleteLeaf(suc);
         	else
         		deleteUnary (suc, 'R');
@@ -308,9 +308,9 @@ public class AVLTree {
     		this.root = null;
     	
     	if (p.getLeft() == x)
-    		p.setLeft(externalLeaf);
+    		p.setLeft(this.externalLeaf);
     	if (p.getRight() == x)
-    		p.setRight(externalLeaf);
+    		p.setRight(this.externalLeaf);
     }
     
     
@@ -351,7 +351,7 @@ public class AVLTree {
      */
     
     public IAVLNode successor (IAVLNode x) {
-    	if (x.getRight() != externalLeaf) {
+    	if (!x.getRight().isRealNode()) {
     		return this.minSubtree(x.getRight());
     	}
     	IAVLNode y = x.getParent();
@@ -368,7 +368,7 @@ public class AVLTree {
      *     Complexity (for AVL): O(logn) 
      */
     public IAVLNode minSubtree(IAVLNode x) {
-    	while (x.getLeft() != externalLeaf) {
+    	while (!x.getLeft().isRealNode()) {
     		x = x.getLeft();
     	}
     	return x;
