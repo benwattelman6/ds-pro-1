@@ -327,6 +327,17 @@ public class AVLTree {
     public int join(IAVLNode x, AVLTree t) {
         if (t.empty()) {
             System.out.println("`t` is an empty tree, so just need to insert `x`");
+            int rank = this.getRank();
+            this.insert(x.getKey(), x.getValue());
+            return rank;
+        }
+        if (this.empty()) {
+            System.out.println("Current tree is empty");
+            this.setRoot(t.getRoot());
+            int rank = this.getRank();
+            this.nodes = t.size();
+            this.insert(x.getKey(), x.getValue());
+            return rank;
         }
         int rankDiff = this.getRank() - t.getRank();
 

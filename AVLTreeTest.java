@@ -112,7 +112,12 @@ class AVLTreeTest {
             t2.insert(i, "Key is " + i);
         }
         t3.insert(7, "7");
-        t2.join(t3.getRoot(), t1);
+//        t2.join(t3.getRoot(), t1);
+
+        AVLTree t4 = new AVLTree();
+
+        t4.join(t3.getRoot(), t2);
+        System.out.println("");
     }
 
 }
