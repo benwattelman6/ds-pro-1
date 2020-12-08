@@ -69,8 +69,9 @@ public class AVLTree {
     public String search(int k) {
         IAVLNode n = search(getRoot(), k);
         if (n == null) return null;
-        if (n == externalLeaf) return null;
-        return n.getValue();
+
+        if (!n.isRealNode()) return null;
+        return n.getValue();  // to be replaced by student code
     }
 
     /**
@@ -79,9 +80,9 @@ public class AVLTree {
      * Complexity: O(logn)
      */
     private IAVLNode search(IAVLNode root, int k) {
-        if (root == null || root == externalLeaf || root.getKey() == k) {
-            return root;
-        }
+        if (root == null) return null;
+        if (!root.isRealNode()) return null;
+        if (root.getKey() == k) return root;
         if (root.getKey() < k) return search(root.getRight(), k);
         return search(root.getLeft(), k);
     }
@@ -129,7 +130,7 @@ public class AVLTree {
         IAVLNode newNode = createNewNode(k, i);
         IAVLNode a = getRoot();
         IAVLNode b = null;
-        while (a != this.externalLeaf && a != null) {
+        while (a != null && a.isRealNode()) {
             b = a;
             if (b.getKey() == k) return -1;
             if (k < a.getKey()) a = a.getLeft();
@@ -170,7 +171,7 @@ public class AVLTree {
         while (p != null) {
             int actions = rebalance(p);
             if (actions > 0) {
-                System.out.println("[insert] Rotation occured. Tree is balanced.");
+                System.out.println("[insert] Rotation occurred. Tree is balanced.");
                 counter += actions;
                 // TODO: can break here?
             }
@@ -384,7 +385,7 @@ public class AVLTree {
         if (empty()) return null;
         IAVLNode n = getRoot();
         IAVLNode a = null;
-        while (n != null && n != externalLeaf) {
+        while (n != null && n.isRealNode()) {
             a = n;
             n = n.getLeft();
         }
@@ -402,7 +403,7 @@ public class AVLTree {
         if (empty()) return null;
         IAVLNode n = getRoot();
         IAVLNode a = null;
-        while (n != null && n != externalLeaf) {
+        while (n != null && n.isRealNode()) {
             a = n;
             n = n.getRight();
         }
@@ -476,6 +477,20 @@ public class AVLTree {
     }
 
     /**
+     * This method returns the rank of the tree.
+     * empty tree rank is
+     */
+    public int getRank() {
+        if (empty()) return -1;
+        return getRoot().getHeight();
+    }
+
+    public String toString() {
+        IAVLNode root = this.getRoot();
+        return "Tree root: " + (root != null ? root.getValue() : "EMPTY");
+    }
+
+    /**
      * public string split(int x)
      * <p>
      * splits the tree into 2 trees according to the key x.
@@ -496,7 +511,83 @@ public class AVLTree {
      * postcondition: none
      */
     public int join(IAVLNode x, AVLTree t) {
-        return 0;
+        if (t.empty()) {
+            System.out.println("`t` is an empty tree, so just need to insert `x`");
+            int rank = this.getRank();
+            this.insert(x.getKey(), x.getValue());
+            return rank;
+        }
+        if (this.empty()) {
+            System.out.println("Current tree is empty");
+            this.setRoot(t.getRoot());
+            int rank = this.getRank();
+            this.nodes = t.size();
+            this.insert(x.getKey(), x.getValue());
+            return rank;
+        }
+        int rankDiff = this.getRank() - t.getRank();
+
+        AVLTree T1, T2; // rank(T1) <= rank(T2)
+        if (rankDiff >= 0) {
+            // this is the bigger tree
+            T1 = t;
+            T2 = this;
+        } else {
+            // t is the bigger tree
+            T1 = this;
+            T2 = t;
+        }
+        int biggerKeys = T1.getRoot().getKey() - T2.getRoot().getKey(); // can't be 0!
+
+        IAVLNode a, b, c, left, right;
+        a = T1.getRoot();
+        b = T2.getRoot();
+        while (b.getHeight() > a.getHeight()) {
+            if (biggerKeys > 0) {
+                // T1 (the smaller tree), has bigger keys, thus it should hang from the right
+                // so we are traveling the right spine
+                b = b.getRight();
+            } else {
+                // T2 has bigger keys, thus T1 should hang from the left
+                // so we are traveling the left spine
+                b = b.getLeft();
+            }
+        }
+        // we got b!
+        c = b.getParent();
+
+        if (biggerKeys > 0) {
+            right = a;
+            left = b;
+        } else {
+            right = b;
+            left = a;
+        }
+        x.setLeft(left);
+        x.setRight(right);
+        x.setHeight(T1.getRank() + 1);
+        left.setParent(x);
+        right.setParent(x);
+        x.setParent(c);
+        if (c == null) {
+            // x is new root, and tree is balanced
+            this.setRoot(x);
+            return 1;
+        } else if (biggerKeys > 0) c.setRight(x);
+        else c.setLeft(x);
+        IAVLNode p = x;
+        while (p != null) {
+            if (p.getParent() == null) {
+                this.setRoot(p);
+            }
+            rebalance(p);
+            updateHeight(p);
+
+            p = p.getParent();
+
+        }
+        this.nodes += 1 + t.size(); // update the amount of nodes (x + all the nodes of t);
+        return Math.abs(rankDiff) + 1;
     }
 
     /**
@@ -529,8 +620,9 @@ public class AVLTree {
      * Time complexity: O(1)
      */
     public IAVLNode rotate(IAVLNode root, char type) {
-        // ensure nothing bad happens with invalid input
-        if (root == null || root == this.externalLeaf) {
+
+        // ensure nothing bad happen with invalid input
+        if (root == null || !root.isRealNode()) {
             return null;
         }
         if (type == 'R') return rotateRight(root);
@@ -587,7 +679,7 @@ public class AVLTree {
 
 
     int getBalance(IAVLNode node) {
-        if (node == null || node == this.externalLeaf) return 0;
+        if (node == null || !node.isRealNode()) return 0;
         return (node.getLeft().getHeight() - node.getRight().getHeight());
 
     }
@@ -684,6 +776,10 @@ public class AVLTree {
         	this.key = key;
         }
         
+        public String toString() {
+            return this.key + ": " + this.info;
+        }
+
         public void setIsExternal(boolean b) {
             this.isExternal = b;
         }
