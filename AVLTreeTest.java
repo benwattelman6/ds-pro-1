@@ -4,6 +4,33 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AVLTreeTest {
 
+
+
+    @org.junit.jupiter.api.Test
+    void init() {
+
+        AVLTree t1 = new AVLTree();
+        assertTrue(t1.empty());
+        assertEquals(-1, t1.getRank());
+        assertNull(t1.getRoot());
+        assertNull(t1.min());
+        assertNull(t1.max());
+        assertFalse(t1.externalLeaf.isRealNode());
+    }
+
+    @org.junit.jupiter.api.Test
+    void createNewNode() {
+        AVLTree t1 = new AVLTree();
+        AVLTree.IAVLNode n = t1.createNewNode(10, "funny info");
+        assertEquals(10, n.getKey());
+        assertEquals("funny info", n.getValue());
+        assertEquals(0, n.getHeight());
+        assertTrue(n.isRealNode());
+        assertFalse(n.getLeft().isRealNode());
+        assertFalse(n.getRight().isRealNode());
+    }
+
+
     @org.junit.jupiter.api.Test
     void insert() {
         // TODO: Do real testing for this after implementing the rebalance & height
@@ -28,13 +55,31 @@ class AVLTreeTest {
     @org.junit.jupiter.api.Test
     void rotate() {
         AVLTree tree = new AVLTree();
-        tree.insert(43, "43");
-        tree.insert(18, "18");
-        tree.insert(22, "22");
-        BTreePrinter.printNode(tree.getRoot());
-//        tree.rotate(tree.getRoot().getLeft(), 'L');
-//        tree.rotate(tree.getRoot(), 'R');
-        BTreePrinter.printNode(tree.getRoot());
+        AVLTree.IAVLNode[] a = new AVLTree.IAVLNode[10];
+
+        for (int i = 0; i < 10; i++) {
+            a[i] = tree.createNewNode(i, "info for " + i);
+        }
+        for (int i = 1; i < 10; i++) {
+            a[i].setParent(a[(i - 1) / 2]);
+            if (2 * i + 1 < 10) a[i].setLeft(a[2 * i + 1]);
+            if (2 * i + 2 < 10) a[i].setRight(a[2 * i + 2]);
+        }
+        a[0].setLeft(a[1]);
+        a[0].setRight(a[2]);
+        tree.setRoot(a[0]);
+        tree.rotateRight(tree.getRoot());
+        assertEquals(tree.getRoot(), a[1]);
+        assertEquals(a[0].getParent(), a[1]);
+        assertNull(a[1].getParent());
+        assertEquals(a[4], a[0].getLeft());
+        assertEquals(a[0], a[4].getParent());
+        tree.rotateLeft(tree.getRoot());
+        assertEquals(a[0], tree.getRoot());
+        assertEquals(a[0], a[1].getParent());
+        assertNull(a[0].getParent());
+        assertEquals(a[4], a[1].getRight());
+        assertEquals(a[1], a[4].getParent());
     }
 
     @org.junit.jupiter.api.Test

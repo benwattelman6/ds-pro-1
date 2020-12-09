@@ -650,7 +650,7 @@ public class AVLTree {
 
         newRoot.setLeft(oldRoot);
         oldRoot.setRight(z);
-
+        z.setParent(oldRoot);
         updateParentsAfterRotation(newRoot, oldRoot);
 
         updateHeight(oldRoot);
@@ -669,7 +669,7 @@ public class AVLTree {
 
         newRoot.setRight(oldRoot);
         oldRoot.setLeft(z);
-
+        z.setParent(oldRoot);
         updateParentsAfterRotation(newRoot, oldRoot);
 
         updateHeight(oldRoot);
