@@ -165,4 +165,14 @@ class AVLTreeTest {
         System.out.println("");
     }
 
+    @org.junit.jupiter.api.Test
+    void split() {
+        AVLTree t1 = new AVLTree();
+        for (int i = 1; i < 30; i++) {
+            t1.insert(i, "Key is " + i);
+        }
+
+        AVLTree[] b = t1.split(12);
+    }
+
 }
