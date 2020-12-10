@@ -1,4 +1,3 @@
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
@@ -22,9 +21,10 @@ public class AVLTree {
      */
     public AVLTree() {
         //initialize external leaf with isExternal = true
-        externalLeaf = new AVLNode("", -1);
-        externalLeaf.setIsExternal(true);
-        externalLeaf.setHeight(-1); // important to get the balance afterwards
+        this.externalLeaf = new AVLNode("", -1);
+        this.externalLeaf.setIsExternal(true);
+        this.externalLeaf.setHeight(-1); // important to get the balance afterwards
+        this.externalLeaf.setSize(0); //important to get the size afterwards
         this.root = null;
         this.nodes = 0;
     }
@@ -115,7 +115,8 @@ public class AVLTree {
             System.out.printf("[Insert] Setting `%d` as root\n", k);
             b = newNode;
             this.setRoot(b);
-        } else {
+        }
+        else {
             if (k == b.getKey()) {
                 System.out.printf("[Insert] Key `%d` already exists in tree\n", k);
                 return -1;
@@ -135,7 +136,9 @@ public class AVLTree {
             }
             newNode.setParent(b);
         }
-        if (updateHeight(b)) counter++;
+        if (updateHeight(b))
+        	counter++;
+        updateNodeSize(b);
 
         IAVLNode p = newNode;
         while (p != null) {
@@ -143,12 +146,12 @@ public class AVLTree {
             if (actions > 0) {
                 System.out.println("[insert] Rotation occurred. Tree is balanced.");
                 counter += actions;
-                // TODO: can break here?
             }
             if (updateHeight(p)) counter++;
+            updateNodeSize(p); // TODO: not sure this is ideal location within loop, in any case it's constant number of operations
             p = p.getParent();
         }
-        if (updateHeight(getRoot())) counter++; // TODO: not sure necessary after change in loop
+        if (updateHeight(getRoot())) counter++; // TODO: not sure necessary after change in loop, in any case it's constant number of operations
         this.nodes++; // increment the number of nodes
         return counter;
     }
@@ -241,13 +244,15 @@ public class AVLTree {
         }
 
         //rebalance from p upwards
-        if (updateHeight(p)) //if we don't have a problem - program should end here
+        if (updateHeight(p))
             counter++;
+        updateNodeSize(p);
         IAVLNode node = p;
         while (node != null) {
             int actions = rebalance(node);
             if (actions > 0) counter += actions;
             if (updateHeight(node)) counter++;
+            updateNodeSize(node); // TODO: not sure this is ideal location within loop, in any case it's constant number of operations
             node = node.getParent();
         }
 
@@ -378,7 +383,7 @@ public class AVLTree {
      * or an empty array if the tree is empty.
      */
     public int[] keysToArray() {
-        int[] arr = new int[size()]; // to be replaced by student code
+        int[] arr = new int[this.size()]; 
         ListIterator<IAVLNode> listIterator = inOrderTraversal(getRoot()).listIterator(); //TODO: pretty sure we're not allowed to use ListIterator or arrays
         int i = 0;
         while (listIterator.hasNext()) {
@@ -398,7 +403,7 @@ public class AVLTree {
      * or an empty array if the tree is empty.
      */
     public String[] infoToArray() {
-        String[] arr = new String[size()]; // to be replaced by student code
+        String[] arr = new String[this.size()]; // to be replaced by student code
         ListIterator<IAVLNode> listIterator = inOrderTraversal(getRoot()).listIterator(); //TODO: examine use of existing data structures
         int i = 0;
         while (listIterator.hasNext()) {
@@ -420,8 +425,7 @@ public class AVLTree {
      * Complexity: O(1)
      */
     public int size() {
-        // TODO: update the size field to obtain O(1) complexity
-        return size(this.root);
+        return this.root.getSize();
     }
 
     /**
@@ -431,15 +435,15 @@ public class AVLTree {
      * @param root
      * @return
      */
-    int size(IAVLNode root) {
-        int c = 1;
-        if (root == null || !root.isRealNode()) return 0;
-        else {
-            c += size(root.getRight());
-            c += size(root.getLeft());
-            return c;
-        }
-    }
+//    public int size(IAVLNode root) {
+//        int c = 1;
+//        if (root == null || !root.isRealNode()) return 0;
+//        else {
+//            c += size(root.getRight());
+//            c += size(root.getLeft());
+//            return c;
+//        }
+//    }
 
     /**
      * public int getRoot()
@@ -451,12 +455,12 @@ public class AVLTree {
      * O(1)
      */
     public IAVLNode getRoot() {
-        return root;
+        return this.root;
     }
 
     /**
      * This method returns the rank of the tree.
-     * empty tree rank is
+     * empty tree rank is -1
      */
     public int getRank() {
         if (empty()) return -1;
@@ -497,13 +501,13 @@ public class AVLTree {
         IAVLNode n = search(getRoot(), x); // get the node with key x
         AVLTree small = toTree(n.getLeft());
         AVLTree big = toTree(n.getRight());
-
-        // TODO: handle size update!
+        //node sizes unchanged
+        
         IAVLNode parent = n.getParent();
         while (parent != null) {
             IAVLNode replacer = createNewNode(parent.getKey(), parent.getValue());
             if (parent.getKey() > n.getKey()) {
-                // current node is left child => smaller than parent => we want to join with small
+                // current node is left child => smaller than parent => we want to join with big
                 if (!big.empty()) {
                     replacer.setLeft(big.getRoot());
                     big.getRoot().setParent(replacer);
@@ -520,6 +524,7 @@ public class AVLTree {
                 small.setRoot(replacer);
             }
             updateHeight(replacer);
+            updateNodeSize(replacer);
             parent = parent.getParent();
         }
         return new AVLTree[]{small, big};
@@ -589,6 +594,7 @@ public class AVLTree {
         x.setLeft(left);
         x.setRight(right);
         x.setHeight(T1.getRank() + 1);
+        updateNodeSize(x);
         left.setParent(x);
         right.setParent(x);
         x.setParent(c);
@@ -596,8 +602,11 @@ public class AVLTree {
             // x is new root, and tree is balanced
             this.setRoot(x);
             return 1;
-        } else if (biggerKeys > 0) c.setRight(x);
-        else c.setLeft(x);
+        }
+        else if (biggerKeys > 0)
+        	c.setRight(x);
+        else
+        	c.setLeft(x);
         IAVLNode p = x;
         while (p != null) {
             if (p.getParent() == null) {
@@ -605,6 +614,7 @@ public class AVLTree {
             }
             rebalance(p);
             updateHeight(p);
+            updateNodeSize(p);
 
             p = p.getParent();
 
@@ -649,7 +659,10 @@ public class AVLTree {
         if (type == 'R') return rotateRight(root);
         else return rotateLeft(root);
     }
-
+    
+    /*
+     * Updates new & old root pointers AND their size
+     */
     public void updateParentsAfterRotation(IAVLNode newRoot, IAVLNode oldRoot) {
         newRoot.setParent(oldRoot.getParent());
         oldRoot.setParent(newRoot);
@@ -657,6 +670,9 @@ public class AVLTree {
             setRoot(newRoot);
         else if (newRoot.getParent().getKey() > newRoot.getKey()) newRoot.getParent().setLeft(newRoot);
         else newRoot.getParent().setRight(newRoot);
+        //update size of both nodes - the're the only ones that change during rotation
+        updateNodeSize(oldRoot); //have to update 'lower' node first
+        updateNodeSize (newRoot);
     }
 
     /**
@@ -665,7 +681,7 @@ public class AVLTree {
      * @param oldRoot
      * @return
      */
-    IAVLNode rotateLeft(IAVLNode oldRoot) {
+    public IAVLNode rotateLeft(IAVLNode oldRoot) {
         IAVLNode newRoot = oldRoot.getRight();
         IAVLNode z = newRoot.getLeft();
 
@@ -684,7 +700,7 @@ public class AVLTree {
      *
      * @param oldRoot
      */
-    IAVLNode rotateRight(IAVLNode oldRoot) {
+    public IAVLNode rotateRight(IAVLNode oldRoot) {
         IAVLNode newRoot = oldRoot.getLeft();
         IAVLNode z = newRoot.getRight();
 
@@ -699,7 +715,7 @@ public class AVLTree {
     }
 
 
-    int getBalance(IAVLNode node) {
+    public int getBalance(IAVLNode node) {
         if (node == null || !node.isRealNode()) return 0;
         return (node.getLeft().getHeight() - node.getRight().getHeight());
 
@@ -711,7 +727,7 @@ public class AVLTree {
      * @param root
      * @return TODO: complexity
      */
-    LinkedList<IAVLNode> inOrderTraversal(IAVLNode root) {
+    public LinkedList<IAVLNode> inOrderTraversal(IAVLNode root) {
         LinkedList<IAVLNode> list = new LinkedList<IAVLNode>();
         if (root == null) return list;
         if (!root.isRealNode()) return list; // reached externl leaf
@@ -719,6 +735,12 @@ public class AVLTree {
         list.add(root); // O(1)
         list.addAll(inOrderTraversal(root.getRight())); // add all = O(1)
         return list;
+    }
+    
+    public void updateNodeSize(IAVLNode node) {
+    	if (node.isRealNode()) {
+    		node.setSize(node.getLeft().getSize() + node.getRight().getSize() + 1);
+    	}
     }
 
     /**
@@ -751,6 +773,10 @@ public class AVLTree {
         public void setInfo(String info);
 
         public void setKey(int key);
+        
+        public int getSize();
+        
+        public void setSize(int s);
 
 
     }
@@ -877,6 +903,14 @@ public class AVLTree {
 
         public int getHeight() {
             return this.height;
+        }
+        
+        public int getSize() {
+        	return this.size;
+        }
+        
+        public void setSize (int s) {
+        	this.size = s;
         }
 
 
