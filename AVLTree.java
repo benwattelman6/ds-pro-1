@@ -112,26 +112,22 @@ public class AVLTree {
         // If the root is null the tree is empty
         // The new node is the root node
         if (b == null) {
-            System.out.printf("[Insert] Setting `%d` as root\n", k);
             b = newNode;
             this.setRoot(b);
         }
         else {
             if (k == b.getKey()) {
-                System.out.printf("[Insert] Key `%d` already exists in tree\n", k);
                 return -1;
             }
             // If the key is greater then the leaf node key
             // Assign the new node to be its right child
             if (k > b.getKey()) {
-                System.out.printf("[Insert] Setting `%d` as right child of `%d`\n", k, b.getKey());
                 b.setRight(newNode);
             }
 
             // If the new key is less then the leaf node key
             // Assign the new node to be its left child
             else {
-                System.out.printf("[Insert] Setting `%d` as left child of `%d`\n", k, b.getKey());
                 b.setLeft(newNode);
             }
             newNode.setParent(b);
@@ -144,7 +140,6 @@ public class AVLTree {
         while (p != null) {
             int actions = rebalance(p);
             if (actions > 0) {
-                System.out.println("[insert] Rotation occurred. Tree is balanced.");
                 counter += actions;
             }
             if (updateHeight(p)) counter++;
@@ -163,15 +158,12 @@ public class AVLTree {
      * @return
      */
     public int rebalance(IAVLNode n) {
-        System.out.println("[rebalance] rebalancing node " + n.getKey());
         int counter = 0;
         int balance = getBalance(n);
         if (balance > 1) {
-            System.out.println("[rebalance] left heavy");
             // heavy on the left
             if (getBalance(n.getLeft()) < 0) {
                 // This is LR case
-                System.out.println("[rebalance] the right subtree causing it, should be LR");
                 counter = 5; // add the rotation to counter
                 rotate(n.getLeft(), 'L');
             } else {
@@ -180,11 +172,9 @@ public class AVLTree {
             }
             rotate(n, 'R');
         } else if (balance < -1) {
-            System.out.println("[rebalance] right heavy");
             // heavy on the right
             if (getBalance(n.getRight()) > 0) {
                 // This is RL case
-                System.out.println("[rebalance] the right left causing it, should be RL");
                 counter = 5;
                 //TODO: single rotation for 'delete' should be 3, while for 'insert' it should be 2
                 rotate(n.getRight(), 'R');
@@ -214,25 +204,19 @@ public class AVLTree {
         int counter = 0;
 
         if (toDelete == null) { //k not in tree
-            System.out.printf("[delete] `%d` not in tree\n", k);
             return -1;
         }
 
         //case 'k is root' handled within the function
-        System.out.printf("[delete] `%d` in tree, initiating deletion\n", k);
         IAVLNode p = toDelete.getParent(); //rank problem starts from p, could be null if k is root
 
         if (toDelete.getLeft().isRealNode() && toDelete.getRight().isRealNode()) { //k is a leaf
-            System.out.printf("[delete] `%d` is a leaf, deleting it from tree \n", k);
             deleteLeaf(toDelete);
         } else if (toDelete.getRight().isRealNode()) { //k only has left child
-            System.out.printf("[delete] `%d` is unary left, deleting it from tree \n", k);
             deleteUnary(toDelete, 'L');
         } else if (toDelete.getLeft().isRealNode()) { //k only has right child
-            System.out.printf("[delete] `%d` is unary right, deleting it from tree \n", k);
             deleteUnary(toDelete, 'R');
         } else { //k is a binary node
-            System.out.printf("[delete] `%d` is binary node, deleting it from tree \n", k);
             IAVLNode suc = successor(toDelete);
             toDelete.setInfo(suc.getValue());
             toDelete.setKey(suc.getKey());
@@ -540,13 +524,11 @@ public class AVLTree {
      */
     public int join(IAVLNode x, AVLTree t) {
         if (t.empty()) {
-            System.out.println("`t` is an empty tree, so just need to insert `x`");
             int rank = this.getRank();
             this.insert(x.getKey(), x.getValue());
             return rank;
         }
         if (this.empty()) {
-            System.out.println("Current tree is empty");
             this.setRoot(t.getRoot());
             int rank = this.getRank();
             this.nodes = t.size();
@@ -877,7 +859,6 @@ public class AVLTree {
          */
         public void setParent(IAVLNode node) {
             if (node == this) {
-                System.out.println("[set parent] parent can't be the node itself");
                 return; // don't do anything stupid
             }
             this.parent = (AVLNode) node;
