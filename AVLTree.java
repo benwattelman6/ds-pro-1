@@ -114,8 +114,7 @@ public class AVLTree {
         if (b == null) {
             b = newNode;
             this.setRoot(b);
-        }
-        else {
+        } else {
             if (k == b.getKey()) {
                 return -1;
             }
@@ -133,7 +132,7 @@ public class AVLTree {
             newNode.setParent(b);
         }
         if (updateHeight(b))
-        	counter++;
+            counter++;
         updateNodeSize(b);
 
         IAVLNode p = newNode;
@@ -146,7 +145,8 @@ public class AVLTree {
             updateNodeSize(p); // TODO: not sure this is ideal location within loop, in any case it's constant number of operations
             p = p.getParent();
         }
-        if (updateHeight(getRoot())) counter++; // TODO: not sure necessary after change in loop, in any case it's constant number of operations
+        if (updateHeight(getRoot()))
+            counter++; // TODO: not sure necessary after change in loop, in any case it's constant number of operations
         this.nodes++; // increment the number of nodes
         return counter;
     }
@@ -210,13 +210,13 @@ public class AVLTree {
         //case 'k is root' handled within the function
         IAVLNode p = toDelete.getParent(); //rank problem starts from p, could be null if k is root
 
-        if (toDelete.getLeft().isRealNode() && toDelete.getRight().isRealNode()) { //k is a leaf
+        if (!toDelete.getLeft().isRealNode() && !toDelete.getRight().isRealNode()) { // k is a leaf
             deleteLeaf(toDelete);
-        } else if (toDelete.getRight().isRealNode()) { //k only has left child
+        } else if (toDelete.getLeft().isRealNode() && !toDelete.getRight().isRealNode()) { // k only has left child
             deleteUnary(toDelete, 'L');
-        } else if (toDelete.getLeft().isRealNode()) { //k only has right child
+        } else if (toDelete.getRight().isRealNode() && !toDelete.getLeft().isRealNode()) { //k only has right child
             deleteUnary(toDelete, 'R');
-        } else { //k is a binary node
+        } else { // k is a binary node
             IAVLNode suc = successor(toDelete);
             toDelete.setInfo(suc.getValue());
             toDelete.setKey(suc.getKey());
@@ -253,13 +253,15 @@ public class AVLTree {
      */
     public void deleteLeaf(IAVLNode x) {
         IAVLNode p = x.getParent();
-        if (p == null) //deleting only node in tree
+        if (p == null) {
             this.root = null;
+            return;
+        }
 
-        if (p.getLeft() == x)
-            p.setLeft(this.externalLeaf);
-        if (p.getRight() == x)
-            p.setRight(this.externalLeaf);
+        // checking if this is right or left child
+        // and replacing with external leaf
+        if (p.getKey() > x.getKey()) p.setLeft(this.externalLeaf);
+        else p.setRight(this.externalLeaf);
     }
 
 
@@ -271,22 +273,17 @@ public class AVLTree {
      */
     public void deleteUnary(IAVLNode x, char c) {
         IAVLNode p = x.getParent(); //p could be null if x is root
-        IAVLNode child = null;
-        if (c == 'L')
-            child = x.getLeft();
-        if (c == 'R')
-            child = x.getRight();
-
+        IAVLNode child = c == 'L' ? x.getLeft() : x.getRight();
         child.setParent(p);
 
-        if (p != null) { //p isn't root
+        if (p != null) { // x isn't root
             boolean isLeftChild = (p.getLeft() == x);
-
-
             if (isLeftChild)
                 p.setLeft(child);
             else
                 p.setRight(child);
+        } else { // x is the root, the child is the new root of the tree
+            setRoot(child);
         }
 
     }
@@ -300,7 +297,7 @@ public class AVLTree {
      */
 
     public IAVLNode successor(IAVLNode x) {
-        if (!x.getRight().isRealNode()) {
+        if (x.getRight().isRealNode()) {
             return this.minSubtree(x.getRight());
         }
         IAVLNode y = x.getParent();
@@ -367,7 +364,7 @@ public class AVLTree {
      * or an empty array if the tree is empty.
      */
     public int[] keysToArray() {
-        int[] arr = new int[this.size()]; 
+        int[] arr = new int[this.size()];
         ListIterator<IAVLNode> listIterator = inOrderTraversal(getRoot()).listIterator(); //TODO: pretty sure we're not allowed to use ListIterator or arrays
         int i = 0;
         while (listIterator.hasNext()) {
@@ -409,7 +406,8 @@ public class AVLTree {
      * Complexity: O(1)
      */
     public int size() {
-        return this.root.getSize();
+        if (this.root != null) return this.root.getSize();
+        else return 0;
     }
 
     /**
@@ -486,7 +484,7 @@ public class AVLTree {
         AVLTree small = toTree(n.getLeft());
         AVLTree big = toTree(n.getRight());
         //node sizes unchanged
-        
+
         IAVLNode parent = n.getParent();
         while (parent != null) {
             IAVLNode replacer = createNewNode(parent.getKey(), parent.getValue());
@@ -584,11 +582,10 @@ public class AVLTree {
             // x is new root, and tree is balanced
             this.setRoot(x);
             return 1;
-        }
-        else if (biggerKeys > 0)
-        	c.setRight(x);
+        } else if (biggerKeys > 0)
+            c.setRight(x);
         else
-        	c.setLeft(x);
+            c.setLeft(x);
         IAVLNode p = x;
         while (p != null) {
             if (p.getParent() == null) {
@@ -622,6 +619,7 @@ public class AVLTree {
      * @return Complexity: O(1)
      */
     private boolean updateHeight(IAVLNode n) {
+        if (n == null) return false;
         int formerHeight = n.getHeight();
         n.setHeight(Math.max(n.getLeft().getHeight(), n.getRight().getHeight()) + 1);
         return formerHeight != n.getHeight();
@@ -641,7 +639,7 @@ public class AVLTree {
         if (type == 'R') return rotateRight(root);
         else return rotateLeft(root);
     }
-    
+
     /*
      * Updates new & old root pointers AND their size
      */
@@ -654,7 +652,7 @@ public class AVLTree {
         else newRoot.getParent().setRight(newRoot);
         //update size of both nodes - the're the only ones that change during rotation
         updateNodeSize(oldRoot); //have to update 'lower' node first
-        updateNodeSize (newRoot);
+        updateNodeSize(newRoot);
     }
 
     /**
@@ -718,11 +716,11 @@ public class AVLTree {
         list.addAll(inOrderTraversal(root.getRight())); // add all = O(1)
         return list;
     }
-    
+
     public void updateNodeSize(IAVLNode node) {
-    	if (node.isRealNode()) {
-    		node.setSize(node.getLeft().getSize() + node.getRight().getSize() + 1);
-    	}
+        if (node != null && node.isRealNode()) {
+            node.setSize(node.getLeft().getSize() + node.getRight().getSize() + 1);
+        }
     }
 
     /**
@@ -755,9 +753,9 @@ public class AVLTree {
         public void setInfo(String info);
 
         public void setKey(int key);
-        
+
         public int getSize();
-        
+
         public void setSize(int s);
 
 
@@ -885,13 +883,13 @@ public class AVLTree {
         public int getHeight() {
             return this.height;
         }
-        
+
         public int getSize() {
-        	return this.size;
+            return this.size;
         }
-        
-        public void setSize (int s) {
-        	this.size = s;
+
+        public void setSize(int s) {
+            this.size = s;
         }
 
 
