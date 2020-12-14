@@ -464,23 +464,14 @@ public class AVLTree {
 
         IAVLNode parent = n.getParent();
         while (parent != null) {
+            // we don't want to mess the current node, so create new one with same values
             IAVLNode replacer = createNewNode(parent.getKey(), parent.getValue());
             if (parent.getKey() > n.getKey()) {
                 // current node is left child => smaller than parent => we want to join with big
-                if (!big.empty()) {
-                    replacer.setLeft(big.getRoot());
-                    big.getRoot().setParent(replacer);
-                }
-                replacer.setRight(parent.getRight());
-                big.setRoot(replacer);
+                big.join(replacer, toTree(parent.getRight()));
             } else {
                 // current node is right child => bigger than parent => we want to join with small
-                if (!small.empty()) {
-                    replacer.setRight(small.getRoot());
-                    small.getRoot().setParent(replacer);
-                }
-                replacer.setLeft(parent.getLeft());
-                small.setRoot(replacer);
+                small.join(replacer, toTree(parent.getLeft()));
             }
             updateHeight(replacer);
             updateNodeSize(replacer);
