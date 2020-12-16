@@ -194,10 +194,7 @@ public class AVLTree {
             }
             rotate(n, 'L');
         }
-
-        //TODO: handle case balance == 0 : can happen after deleting a leaf
-
-
+        
         return counter; // add the rotation to counter
     }
 
