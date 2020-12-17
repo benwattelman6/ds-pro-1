@@ -58,7 +58,7 @@ public class AVLTree {
      * Each iteration is O(1), number of recursions in worst case is O(h) = O(logn) recursive calls
      * Complexity: O(logn)
      */
-    private IAVLNode search(IAVLNode root, int k) {
+    public IAVLNode search(IAVLNode root, int k) {
         if (root == null) return null;
         if (!root.isRealNode()) return null;
         if (root.getKey() == k) return root;
@@ -400,7 +400,7 @@ public class AVLTree {
      * Complexity: O(1)
      */
     public int size() {
-    	if (this.empty()) return 0;
+        if (this.empty()) return 0;
         return this.root.getSize();
     }
 
@@ -438,7 +438,7 @@ public class AVLTree {
      *
      * @return
      */
-    public AVLTree toTree(IAVLNode x) {
+    public static AVLTree toTree(IAVLNode x) {
         AVLTree t = new AVLTree();
         if (x.isRealNode()) {
             t.setRoot(x);
@@ -492,14 +492,14 @@ public class AVLTree {
         if (t.empty()) {
             int rank = this.getRank();
             this.insert(x.getKey(), x.getValue());
-            return rank;
+            return rank + 1;
         }
         if (this.empty()) {
             this.setRoot(t.getRoot());
             int rank = this.getRank();
             this.nodes = t.size();
             this.insert(x.getKey(), x.getValue());
-            return rank;
+            return rank + 1;
         }
         int rankDiff = this.getRank() - t.getRank();
 
@@ -688,9 +688,9 @@ public class AVLTree {
     public LinkedList<IAVLNode> inOrderTraversal(IAVLNode root) {
         LinkedList<IAVLNode> list = new LinkedList<IAVLNode>();
         if (root == null)
-        	return list; //return empty list
+            return list; //return empty list
         if (!root.isRealNode())
-        	return list; // reached externl leaf
+            return list; // reached externl leaf
         list.addAll(inOrderTraversal(root.getLeft())); // add all = O(1)
         list.add(root); // O(1)
         list.addAll(inOrderTraversal(root.getRight())); // add all = O(1)
@@ -922,14 +922,14 @@ public class AVLTree {
         public int getSize() {
             return this.size;
         }
-        
+
         /**
          * public void setSize(int size)
          * Returns the size of this node i.e. the size of its subtree
          * Complexity: O(1)
          */
-        public void setSize (int s) {
-        	this.size = s;
+        public void setSize(int s) {
+            this.size = s;
         }
 
 
